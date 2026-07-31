@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Source Coupons</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; }
+        input[type="text"] { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
+        .submit-btn { display: inline-block; background-color: #2ea44f; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 5px solid #0366d6; }
+        .store { font-size: 1.2em; font-weight: bold; margin: 0 0 10px 0; }
+        .code { background: #eee; padding: 8px; font-family: monospace; font-size: 1.1em; text-align: center; border-radius: 4px; letter-spacing: 1px; margin-bottom: 10px; }
+        .desc { font-size: 0.9em; color: #555; margin-bottom: 10px; }
+        .expiry { font-size: 0.8em; color: #d73a49; font-weight: bold; }
+        footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 0.9em; color: #666; }
+        .crypto { background: #e1e4e8; padding: 10px; border-radius: 6px; display: inline-block; margin-top: 10px; color: #24292e; word-break: break-all; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🛒 Open Source Coupon Board</h1>
+        <p>A community-driven, auto-cleaning discount board.</p>
+        <input type="text" id="searchBar" placeholder="Search for a store (e.g., Amazon, Steam)...">
+        <a href="#" target="_blank" class="submit-btn">➕ Submit a Coupon</a>
+    </header>
+
+    <main>
+        <div id="couponGrid" class="grid"></div>
+    </main>
+
+    <footer>
+        <p>Free, Open Source, and Community Maintained.</p>
+        <p>Saved some money? Show some love to keep this project alive! ☕</p>
+        <div class="crypto"><strong>ETH:</strong> 0xYourWalletAddressHere</div>
+    </footer>
+</div>
+
+<script>
+    fetch('coupons.json')
+        .then(response => response.json())
+        .then(data => {
+            const grid = document.getElementById('couponGrid');
+            const searchBar = document.getElementById('searchBar');
+            
+            function parseDate(dateStr) {
+                const parts = dateStr.split('/');
+                return new Date(parts[2], parts[1] - 1, parts[0]);
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let activeCoupons = data.filter(coupon => {
+                const expiryDate = parseDate(coupon.expiry);
+                return expiryDate >= today;
+            });
+
+            function displayCoupons(coupons) {
+                grid.innerHTML = '';
+                if(coupons.length === 0) {
+                    grid.innerHTML = '<p>No coupons found.</p>';
+                    return;
+                }
+                
+                coupons.forEach(coupon => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <h2 class="store">${coupon.title}</h2>
+                        <div class="desc">${coupon.description}</div>
+                        <div class="code">${coupon.code}</div>
+                        <div class="expiry">Expires: ${coupon.expiry}</div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            displayCoupons(activeCoupons);
+
+            searchBar.addEventListener('keyup', (e) => {
+                const term = e.target.value.toLowerCase();
+                const filtered = activeCoupons.filter(c => c.title.toLowerCase().includes(term) || c.description.toLowerCase().includes(term));
+                displayCoupons(filtered);
+            });
+        })
+        .catch(error => {
+            document.getElementById('couponGrid').innerHTML = '<p>No coupons active right now.</p>';
+        });
+</script>
+
+</body>
+</html>
