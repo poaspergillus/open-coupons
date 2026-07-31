@@ -5,50 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Open Source Coupons</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px; transition: background-color 0.3s, color 0.3s; }
+        .container { max-width: 800px; margin: 0 auto; position: relative; }
         header { text-align: center; margin-bottom: 30px; }
         input[type="text"] { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
         .submit-btn { display: inline-block; background-color: #2ea44f; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px; }
+        
+        .search-prompt { background-color: #e1e4e8; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-size: 1.1em; color: #24292e; border: 1px solid #d1d5da; }
+        
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 5px solid #0366d6; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 5px solid #0366d6; transition: background-color 0.3s; }
         .store { font-size: 1.2em; font-weight: bold; margin: 0 0 10px 0; }
-        .code { background: #eee; padding: 8px; font-family: monospace; font-size: 1.1em; text-align: center; border-radius: 4px; letter-spacing: 1px; margin-bottom: 10px; }
-        .desc { font-size: 0.9em; color: #555; margin-bottom: 10px; }
+        .code { background: #eee; padding: 10px; font-family: monospace; font-size: 1.2em; text-align: center; border-radius: 6px; letter-spacing: 1px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; user-select: none; border: 1px dashed #ccc; }
+        .code:hover { background: #e2e2e2; border-color: #999; }
+        .code:active { transform: scale(0.98); }
+        .desc { font-size: 0.9em; color: #555; margin-bottom: 10px; line-height: 1.4; }
         .expiry { font-size: 0.8em; color: #d73a49; font-weight: bold; }
         footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 0.9em; color: #666; }
-        .crypto { background: #e1e4e8; padding: 10px; border-radius: 6px; display: inline-block; margin-top: 10px; color: #24292e; word-break: break-all; }
+        
+        /* Dark Mode */
+        body.dark-mode { background-color: #121212; color: #e0e0e0; }
+        .dark-mode .card { background: #1e1e1e; box-shadow: 0 2px 5px rgba(255,255,255,0.05); border-left: 5px solid #bb86fc; }
+        .dark-mode input[type="text"] { background: #333; color: #fff; border: 1px solid #555; }
+        .dark-mode .code { background: #2d2d2d; color: #fff; border-color: #555; }
+        .dark-mode .code:hover { background: #3d3d3d; border-color: #777; }
+        .dark-mode .desc { color: #aaa; }
+        .dark-mode footer { color: #888; border-top: 1px solid #333; }
+        .dark-mode .search-prompt { background-color: #2d2d2d; color: #e0e0e0; border-color: #444; }
+        
+        .theme-toggle { position: absolute; top: 0; right: 0; background: none; border: none; font-size: 24px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">🌓</button>
     <header>
         <h1>🛒 Open Source Coupon Board</h1>
         <p>A community-driven, auto-cleaning discount board.</p>
-        <input type="text" id="searchBar" placeholder="Search for a store (e.g., Amazon, Steam)...">
-        
-        <!-- The correctly linked button -->
+        <input type="text" id="searchBar" placeholder="Search for a store (e.g., Amazon, Zomato)...">
         <a href="https://docs.google.com/forms/d/e/1FAIpQLScp0O73wdJFCSX0J3hN1QzuJ6ketfEaYjNH-pPHUxwl5xrcEg/viewform" target="_blank" class="submit-btn">➕ Submit a Coupon</a>
     </header>
 
     <main>
+        <div id="searchPrompt" class="search-prompt">
+            <strong>🔍 Use the search bar to find deals!</strong><br>
+            <span style="font-size: 0.9em;">We have too many coupons to load at once. Here are the Top 5 expiring soonest:</span>
+        </div>
         <div id="couponGrid" class="grid"></div>
     </main>
 
     <footer>
         <p>Free, Open Source, and Community Maintained.</p>
-        <p>Saved some money? Show some love to keep this project alive! ☕</p>
-        <div class="crypto"><strong>ETH:</strong> 0x1F5E458b7a24938912032a086EA03a3a4Ea3910d</div>
     </footer>
 </div>
 
 <script>
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+    }
+    if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
+
+    function copyToClipboard(element, text) {
+        navigator.clipboard.writeText(text).then(() => {
+            element.innerText = "✅ Copied!";
+            element.style.background = "#2ea44f";
+            element.style.color = "white";
+            element.style.borderColor = "#2ea44f";
+            setTimeout(() => {
+                element.innerText = text;
+                element.style.background = "";
+                element.style.color = "";
+                element.style.borderColor = "";
+            }, 1500);
+        });
+    }
+
     fetch('coupons.json')
         .then(response => response.json())
         .then(data => {
             const grid = document.getElementById('couponGrid');
             const searchBar = document.getElementById('searchBar');
+            const searchPrompt = document.getElementById('searchPrompt');
             
             function parseDate(dateStr) {
                 const parts = dateStr.split('/');
@@ -58,41 +97,48 @@
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            let activeCoupons = data.filter(coupon => {
-                const expiryDate = parseDate(coupon.expiry);
-                return expiryDate >= today;
-            });
+            let activeCoupons = data.filter(coupon => parseDate(coupon.expiry) >= today);
+            
+            // Sort by nearest expiry
+            activeCoupons.sort((a, b) => parseDate(a.expiry) - parseDate(b.expiry));
 
-            function displayCoupons(coupons) {
+            function displayCoupons(coupons, limit = false) {
                 grid.innerHTML = '';
-                if(coupons.length === 0) {
+                let displayList = limit ? coupons.slice(0, 5) : coupons;
+
+                if(displayList.length === 0) {
                     grid.innerHTML = '<p>No coupons found.</p>';
                     return;
                 }
                 
-                coupons.forEach(coupon => {
+                displayList.forEach(coupon => {
                     const card = document.createElement('div');
                     card.className = 'card';
                     card.innerHTML = `
                         <h2 class="store">${coupon.title}</h2>
                         <div class="desc">${coupon.description}</div>
-                        <div class="code">${coupon.code}</div>
+                        <div class="code" onclick="copyToClipboard(this, '${coupon.code}')" title="Tap to copy">${coupon.code}</div>
                         <div class="expiry">Expires: ${coupon.expiry}</div>
                     `;
                     grid.appendChild(card);
                 });
             }
 
-            displayCoupons(activeCoupons);
+            // Initial Load: Show only top 5
+            displayCoupons(activeCoupons, true);
 
             searchBar.addEventListener('keyup', (e) => {
-                const term = e.target.value.toLowerCase();
-                const filtered = activeCoupons.filter(c => c.title.toLowerCase().includes(term) || c.description.toLowerCase().includes(term));
-                displayCoupons(filtered);
+                const term = e.target.value.toLowerCase().trim();
+                
+                if (term === '') {
+                    searchPrompt.style.display = 'block';
+                    displayCoupons(activeCoupons, true); // Go back to top 5
+                } else {
+                    searchPrompt.style.display = 'none'; // Hide prompt while searching
+                    const filtered = activeCoupons.filter(c => c.title.toLowerCase().includes(term) || c.description.toLowerCase().includes(term));
+                    displayCoupons(filtered, false); // Show ALL matches
+                }
             });
-        })
-        .catch(error => {
-            document.getElementById('couponGrid').innerHTML = '<p>No coupons active right now.</p>';
         });
 </script>
 
