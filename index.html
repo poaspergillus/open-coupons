@@ -91,16 +91,17 @@
 
     function copyToClipboard(element, text) {
         navigator.clipboard.writeText(text).then(() => {
-            element.innerText = "✅ Copied!";
+            element.innerText = "✅ Copied & Reset!";
             element.style.background = "#2ea44f";
             element.style.color = "white";
             element.style.borderColor = "#2ea44f";
             setTimeout(() => {
-                element.innerText = text;
-                element.style.background = "";
-                element.style.color = "";
-                element.style.borderColor = "";
-            }, 1500);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                document.getElementById('searchBar').value = '';
+                // Trigger reset to top 5
+                const event = new Event('keyup');
+                document.getElementById('searchBar').dispatchEvent(event);
+            }, 800);
         });
     }
 
