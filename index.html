@@ -15,9 +15,11 @@
         input[type="text"] { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
         .submit-btn { display: inline-block; background-color: #2ea44f; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px; }
         
-        .community-banner { background-color: #e6ffed; border: 1px solid #bef5cb; color: #155724; padding: 12px 15px; border-radius: 8px; margin-bottom: 15px; font-size: 0.95em; text-align: center; line-height: 1.4; }
         .search-prompt { background-color: #e1e4e8; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-size: 1.1em; color: #24292e; border: 1px solid #d1d5da; }
         
+        .empty-state { text-align: center; padding: 40px 20px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-top: 20px; }
+        .empty-state p { font-size: 1.1em; color: #555; margin-bottom: 20px; line-height: 1.5; }
+
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 5px solid #0366d6; transition: background-color 0.3s; }
         .store { font-size: 1.2em; font-weight: bold; margin: 0 0 10px 0; }
@@ -37,7 +39,8 @@
         .dark-mode .desc { color: #aaa; }
         .dark-mode footer { color: #888; border-top: 1px solid #333; }
         .dark-mode .search-prompt { background-color: #2d2d2d; color: #e0e0e0; border-color: #444; }
-        .dark-mode .community-banner { background-color: #1b3a2b; border-color: #2ea44f; color: #a3f7b5; }
+        .dark-mode .empty-state { background: #1e1e1e; color: #e0e0e0; box-shadow: 0 2px 5px rgba(255,255,255,0.05); }
+        .dark-mode .empty-state p { color: #aaa; }
         .dark-mode .mode-btn { background-color: #bb86fc; color: #121212; }
         .dark-mode .mode-btn:hover { background-color: #9965f4; }
     </style>
@@ -51,11 +54,6 @@
             <button class="mode-btn" onclick="toggleTheme()">🌓 Dark Mode</button>
         </div>
         <p>A community-driven, auto-cleaning discount board.</p>
-        
-        <div class="community-banner">
-            Can't find what you need? Submit what you have to help others—maybe one day you'll find what you're looking for! 🤝
-        </div>
-
         <input type="text" id="searchBar" placeholder="Search for a store (e.g., Amazon, Zomato)...">
         <a href="https://docs.google.com/forms/d/e/1FAIpQLScp0O73wdJFCSX0J3hN1QzuJ6ketfEaYjNH-pPHUxwl5xrcEg/viewform" target="_blank" class="submit-btn">➕ Submit a Coupon</a>
     </header>
@@ -66,6 +64,10 @@
             <span style="font-size: 0.9em;">We have too many coupons to load at once. Here are the Top 5 expiring soonest:</span>
         </div>
         <div id="couponGrid" class="grid"></div>
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <p>Can't find what you need? Submit what you have to help others—maybe one day you'll find what you're looking for! 🤝</p>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLScp0O73wdJFCSX0J3hN1QzuJ6ketfEaYjNH-pPHUxwl5xrcEg/viewform" target="_blank" class="submit-btn">➕ Submit a Coupon</a>
+        </div>
     </main>
 
     <footer>
@@ -108,6 +110,7 @@
             const grid = document.getElementById('couponGrid');
             const searchBar = document.getElementById('searchBar');
             const searchPrompt = document.getElementById('searchPrompt');
+            const emptyState = document.getElementById('emptyState');
             
             function parseDate(dateStr) {
                 const parts = dateStr.split('/');
@@ -125,8 +128,10 @@
                 let displayList = limit ? coupons.slice(0, 5) : coupons;
 
                 if(displayList.length === 0) {
-                    grid.innerHTML = '<p>No coupons found.</p>';
+                    emptyState.style.display = 'block';
                     return;
+                } else {
+                    emptyState.style.display = 'none';
                 }
                 
                 displayList.forEach(coupon => {
@@ -148,6 +153,7 @@
                 const term = e.target.value.toLowerCase().trim();
                 if (term === '') {
                     searchPrompt.style.display = 'block';
+                    emptyState.style.display = 'none';
                     displayCoupons(activeCoupons, true);
                 } else {
                     searchPrompt.style.display = 'none';
