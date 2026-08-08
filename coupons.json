@@ -54,12 +54,6 @@
     "expiry": "28/09/2026"
   },
   {
-    "title": "JioSaavn",
-    "description": "30 Days Free. Listen to music without ads with JioSaavn PRO.",
-    "code": "JSGPAY1M",
-    "expiry": "07/08/2026"
-  },
-  {
     "title": "Uni Cards",
     "description": "Free Rupay Card. 50% back on Movies, 1% back UPI, 24K Gold rewards.",
     "code": "N1WMQK6POJ0E",
@@ -136,11 +130,5 @@
     "description": "Buy any 2 @ \u20b9599. Extra \u20b915 off on UPI. Free shipping for GPay users.",
     "code": "GPAYTLR95MWBD4F",
     "expiry": "31/08/2026"
-  },
-  {
-    "title": "Uttaranchal University",
-    "description": "30% Scholarship On Your Uttaranchal Online MBA Fees.",
-    "code": "OUU30",
-    "expiry": "07/08/2026"
   }
 ]
